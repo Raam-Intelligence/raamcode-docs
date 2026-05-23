@@ -46,7 +46,6 @@ Explicit `on=self.trade` is recommended even when optional — it makes intent o
 | [`RSI`](../indicators/rsi) | Single decimal | Relative Strength Index. |
 | [`Momentum`](../indicators/momentum) | Single decimal | Price momentum (close − close N bars ago). |
 | [`StdDev`](../indicators/stddev) | Single decimal | Rolling standard deviation. |
-| [`Aroon`](../indicators/aroon) | `.up`, `.down`, `.oscillator` | Trend strength. |
 | [`DMI`](../indicators/dmi) | `.plus_di`, `.minus_di`, `.adx`, `.adxr` | Directional movement. |
 
 See the [Indicator Catalog](../indicators/) for parameters, formulas, and warmup requirements.
@@ -75,19 +74,19 @@ rsi.crossed_above(30)
 rsi.crossed_below(self.overbought)
 ```
 
-Both sides must be **single-value decimals**. Multi-value indicators (`Aroon`, `DMI`) can't use crossover helpers directly — extract a field first:
+Both sides must be **single-value decimals**. The multi-value `DMI` indicator can't use crossover helpers directly — extract a field first:
 
 ```raamcode
-aroon = Aroon(14, on=self.trade)
-aroon.crossed_above(50)        # ❌ RC2_CROSS_MULTIVALUE
-aroon.up.crossed_above(50)     # ✅ (field-level crossover not yet supported — see roadmap)
+dmi = DMI(14, on=self.trade)
+dmi.crossed_above(25)             # ❌ RC2_CROSS_MULTIVALUE
+dmi.plus_di.crossed_above(25)     # ✅ (field-level crossover not yet supported — see roadmap)
 ```
 
 For now, multi-value crossovers can be expressed manually:
 
 ```raamcode
-aroon = Aroon(14, on=self.trade)
-if aroon.up > 70 and aroon.down < 30:
+dmi = DMI(14, on=self.trade)
+if dmi.plus_di > dmi.minus_di and dmi.adx > 25:
     ...
 ```
 
@@ -99,7 +98,7 @@ smooth_rsi = EMA(5, on=rsi)            # chain a single-value indicator
 high_ema = EMA(10, on=self.trade.high) # chain onto an OHLCV field
 ```
 
-Chaining onto a multi-value indicator output is rejected — `EMA(5, on=aroon)` raises `RC2_IND_ON_MULTIVALUE_CHAIN`. Field-level chaining (`EMA(5, on=aroon.up)`) is on the roadmap.
+Chaining onto a multi-value indicator output is rejected — `EMA(5, on=dmi)` raises `RC2_IND_ON_MULTIVALUE_CHAIN`. Field-level chaining (`EMA(5, on=dmi.plus_di)`) is on the roadmap.
 
 ## Warmup
 

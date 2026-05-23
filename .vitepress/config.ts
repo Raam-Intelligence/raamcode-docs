@@ -95,7 +95,6 @@ export default defineConfig({
             { text: 'RSI', link: '/docs/indicators/rsi' },
             { text: 'Momentum', link: '/docs/indicators/momentum' },
             { text: 'StdDev', link: '/docs/indicators/stddev' },
-            { text: 'Aroon', link: '/docs/indicators/aroon' },
             { text: 'DMI', link: '/docs/indicators/dmi' },
           ],
         },
@@ -160,8 +159,9 @@ export default defineConfig({
     ],
 
     footer: {
+      // internal hrefs include `base` (footer HTML isn't auto-prefixed by VitePress)
       message:
-        'RaamCode — the strategy language for <a href="https://raamtrade.com" target="_blank" rel="noopener">raamtrade.com</a>. Released under a proprietary license.',
+        'RaamCode — the strategy language for <a href="https://raamtrade.com" target="_blank" rel="noopener">raamtrade.com</a>. Released under a proprietary license. · <a href="/raamcode-docs/llms-full">Full text</a>',
       copyright: `© ${new Date().getFullYear()} Raam Intelligence Ltd. All rights reserved.`,
     },
 

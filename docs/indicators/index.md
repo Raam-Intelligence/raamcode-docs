@@ -9,7 +9,6 @@ Built-in indicators ship with the platform. Custom indicators (see [Custom Indic
 | [`RSI`](./rsi) | single decimal | Overbought / oversold (mean reversion). |
 | [`Momentum`](./momentum) | single decimal | Rate-of-change, trend confirmation. |
 | [`StdDev`](./stddev) | single decimal | Volatility, Bollinger bands. |
-| [`Aroon`](./aroon) | `.up`, `.down`, `.oscillator` | Trend-strength + direction. |
 | [`DMI`](./dmi) | `.plus_di`, `.minus_di`, `.adx`, `.adxr` | Directional movement + trend strength. |
 
 ## How to read each page
@@ -32,7 +31,6 @@ def execute(self):
     # ── indicators at the top ──
     sma = SMA(20, on=self.trade)
     rsi = RSI(14, on=self.trade)
-    aroon = Aroon(14, on=self.trade)
 
     # ── logic afterwards ──
     if rsi.crossed_above(30) and self.trade.is_flat:

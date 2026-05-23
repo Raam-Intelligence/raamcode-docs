@@ -35,9 +35,7 @@ The full canonical content is at [llms-full.txt](/llms-full.txt). The links belo
 - [EMA](/docs/indicators/ema): exponentially-weighted moving average — formula with smoothing constant α, Wilder seeding, pullback example.
 - [RSI](/docs/indicators/rsi): Wilder-smoothed RSI bounded 0..100 — formula, warmup, classic 30/70 mean-reversion example.
 - [Momentum](/docs/indicators/momentum): raw rate of change (close − close N bars ago) — unbounded; normalization advice.
-- [StdDev](/docs/indicators/stddev): sample standard deviation — formula and Bollinger Bands construction example.
-- [Aroon](/docs/indicators/aroon): multi-value (.up/.down/.oscillator) — formula, threshold interpretation, why crossed_above doesn't apply.
-- [DMI](/docs/indicators/dmi): multi-value (.plus_di/.minus_di/.adx/.adxr) — Wilder formulas, ADX > 25 trend threshold, ranging-market filter usage.
+- [StdDev](/docs/indicators/stddev): sample standard deviation — formula and Bollinger Bands construction example.- [DMI](/docs/indicators/dmi): multi-value (.plus_di/.minus_di/.adx/.adxr) — Wilder formulas, ADX > 25 trend threshold, ranging-market filter usage.
 
 ## Examples
 

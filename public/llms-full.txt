@@ -45,7 +45,7 @@ That is a complete, deployable strategy. Twelve lines.
 | **`Param()`** | Class body | A tunable value that participates in optimization. |
 | **`Symbol()`** | Class body | A market instrument slot. Subscribers bind tickers at deploy time. |
 | **Sizing** | Class body | How entry verbs size each trade — `FixedQuantity`, `FixedCapital`, or `Compounding`. |
-| **Indicators** | Top of `execute()` | `SMA`, `EMA`, `RSI`, `Aroon`, `DMI`, and custom indicators. |
+| **Indicators** | Top of `execute()` | `SMA`, `EMA`, `RSI`, `DMI`, and custom indicators. |
 | **Order verbs** | Anywhere in `execute()` | `buy`, `sell_short`, `sell`, `buy_to_cover`, `order`. |
 
 ## What RaamCode is not
@@ -757,7 +757,6 @@ Explicit `on=self.trade` is recommended even when optional — it makes intent o
 | [`RSI`](../indicators/rsi) | Single decimal | Relative Strength Index. |
 | [`Momentum`](../indicators/momentum) | Single decimal | Price momentum (close − close N bars ago). |
 | [`StdDev`](../indicators/stddev) | Single decimal | Rolling standard deviation. |
-| [`Aroon`](../indicators/aroon) | `.up`, `.down`, `.oscillator` | Trend strength. |
 | [`DMI`](../indicators/dmi) | `.plus_di`, `.minus_di`, `.adx`, `.adxr` | Directional movement. |
 
 See the [Indicator Catalog](../indicators/) for parameters, formulas, and warmup requirements.
@@ -786,19 +785,19 @@ rsi.crossed_above(30)
 rsi.crossed_below(self.overbought)
 ```
 
-Both sides must be **single-value decimals**. Multi-value indicators (`Aroon`, `DMI`) can't use crossover helpers directly — extract a field first:
+Both sides must be **single-value decimals**. The multi-value `DMI` indicator can't use crossover helpers directly — extract a field first:
 
 ```raamcode
-aroon = Aroon(14, on=self.trade)
-aroon.crossed_above(50)        # ❌ RC2_CROSS_MULTIVALUE
-aroon.up.crossed_above(50)     # ✅ (field-level crossover not yet supported — see roadmap)
+dmi = DMI(14, on=self.trade)
+dmi.crossed_above(25)             # ❌ RC2_CROSS_MULTIVALUE
+dmi.plus_di.crossed_above(25)     # ✅ (field-level crossover not yet supported — see roadmap)
 ```
 
 For now, multi-value crossovers can be expressed manually:
 
 ```raamcode
-aroon = Aroon(14, on=self.trade)
-if aroon.up > 70 and aroon.down < 30:
+dmi = DMI(14, on=self.trade)
+if dmi.plus_di > dmi.minus_di and dmi.adx > 25:
     ...
 ```
 
@@ -810,7 +809,7 @@ smooth_rsi = EMA(5, on=rsi)            # chain a single-value indicator
 high_ema = EMA(10, on=self.trade.high) # chain onto an OHLCV field
 ```
 
-Chaining onto a multi-value indicator output is rejected — `EMA(5, on=aroon)` raises `RC2_IND_ON_MULTIVALUE_CHAIN`. Field-level chaining (`EMA(5, on=aroon.up)`) is on the roadmap.
+Chaining onto a multi-value indicator output is rejected — `EMA(5, on=dmi)` raises `RC2_IND_ON_MULTIVALUE_CHAIN`. Field-level chaining (`EMA(5, on=dmi.plus_di)`) is on the roadmap.
 
 ## Warmup
 
@@ -1857,7 +1856,7 @@ Return a number to make the indicator single-valued (`SMA`, `RSI`, etc.) — usa
 return sum(self.buffer) / len(self.buffer)
 ```
 
-Return a dict to make it multi-valued (`Aroon`-style). Field names become attributes you access from a strategy:
+Return a dict to make it multi-valued (like the built-in `DMI`). Field names become attributes you access from a strategy:
 
 ```raamcode
 return {"up": up_value, "down": down_value, "oscillator": up_value - down_value}
@@ -2126,7 +2125,6 @@ Built-in indicators ship with the platform. Custom indicators (see [Custom Indic
 | [`RSI`](./rsi) | single decimal | Overbought / oversold (mean reversion). |
 | [`Momentum`](./momentum) | single decimal | Rate-of-change, trend confirmation. |
 | [`StdDev`](./stddev) | single decimal | Volatility, Bollinger bands. |
-| [`Aroon`](./aroon) | `.up`, `.down`, `.oscillator` | Trend-strength + direction. |
 | [`DMI`](./dmi) | `.plus_di`, `.minus_di`, `.adx`, `.adxr` | Directional movement + trend strength. |
 
 ## How to read each page
@@ -2149,7 +2147,6 @@ def execute(self):
     # ── indicators at the top ──
     sma = SMA(20, on=self.trade)
     rsi = RSI(14, on=self.trade)
-    aroon = Aroon(14, on=self.trade)
 
     # ── logic afterwards ──
     if rsi.crossed_above(30) and self.trade.is_flat:
@@ -2529,108 +2526,6 @@ class BollingerBounce(Strategy):
 - StdDev is unbounded — values scale with the source. To compare across instruments, normalize by price (`sd.value / self.trade.close`).
 - The Bollinger Bands pattern above is canonical — compose `SMA + StdDev` rather than waiting for a `BollingerBands` indicator.
 - For volatility regimes ("am I in a calm or noisy market?"), compare current StdDev to historical: e.g. is `sd.value > sd.value_at(20)`?
-
-
----
-
-<!-- ── /docs/indicators/aroon ── -->
-
-# Aroon
-
-A trend-strength + direction indicator. Multi-value: `.up`, `.down`, and `.oscillator`.
-
-## Signature
-
-```text
-Aroon(period, on=<source>)
-```
-
-| Argument | Type | Required | Notes |
-|---|---|---|---|
-| `period` | int Param or literal | Yes | Lookback window for the high/low search. |
-| `on=` | symbol or OHLCV field | No | Source. Defaults to the trade symbol's close. |
-
-## Formula
-
-Within the last `period + 1` bars:
-
-- Let `i_max` = bars since the highest high (0 = most recent bar is the high).
-- Let `i_min` = bars since the lowest low.
-
-Then:
-
-$$
-\text{up} = \frac{N - i_{\max}}{N} \times 100
-$$
-
-$$
-\text{down} = \frac{N - i_{\min}}{N} \times 100
-$$
-
-$$
-\text{oscillator} = \text{up} - \text{down}
-$$
-
-Both `.up` and `.down` are bounded `[0, 100]`. The oscillator is bounded `[-100, 100]`.
-
-Interpretation:
-
-- **up ≈ 100** — a new high was hit very recently → strong uptrend.
-- **down ≈ 100** — a new low was hit very recently → strong downtrend.
-- **both low (< 50)** — no recent extreme → ranging market.
-
-## Warmup
-
-`period + 1` bars.
-
-## Reading values
-
-Aroon is multi-value — you access fields with attributes, not `.value`.
-
-```raamcode
-aroon = Aroon(14, on=self.trade)
-
-aroon.up               # decimal 0..100
-aroon.down             # decimal 0..100
-aroon.oscillator       # decimal -100..100
-
-if aroon.up > 70 and aroon.down < 30:
-    ...
-```
-
-::: warning No crossed_above on multi-value
-`aroon.crossed_above(50)` is `RC2_CROSS_MULTIVALUE`. Compare fields explicitly:
-
-```raamcode
-if aroon.up > 70 and self.trade.is_flat:    # ✅
-```
-:::
-
-## Example
-
-```raamcode
-class AroonTrend(Strategy):
-    """Long when Aroon flags a strong uptrend."""
-    period = Param(14, min=5, max=30)
-    trade = Symbol()
-    sizing = FixedCapital()
-
-    def execute(self):
-        aroon = Aroon(self.period, on=self.trade)
-        self.stop_loss(2.5)
-
-        if aroon.up > 80 and aroon.down < 20 and self.trade.is_flat:
-            self.buy(self.trade, reason=f"Aroon up={aroon.up:.0f}")
-
-        if aroon.oscillator < 0 and self.trade.is_long:
-            self.sell(self.trade, self.trade.position, reason="Aroon flipped down")
-```
-
-## Notes
-
-- Aroon is a **trend identification** tool — it tells you *whether* you're trending, not in which direction by itself (both fields are positive). Use the oscillator (`up - down`) for direction.
-- Pair with a momentum indicator for entry timing — Aroon confirms regime, momentum times the trigger.
-- Field-level chaining (`EMA(5, on=aroon.up)`) is on the roadmap. For now, smooth the oscillator yourself: track a manual moving average in persistent state.
 
 
 ---
@@ -4390,13 +4285,13 @@ class Good(Strategy):
 
 ## What it means
 
-Crossover helpers work between two single-value indicators (or between a single-value indicator and a number). Multi-value indicators like `Aroon` and `DMI` expose multiple fields (`.up`, `.down`, `.plus_di`, etc.) and don't have a single "the value" to compare.
+Crossover helpers work between two single-value indicators (or between a single-value indicator and a number). The multi-value `DMI` indicator exposes multiple fields (`.plus_di`, `.minus_di`, `.adx`, `.adxr`) and doesn't have a single "the value" to compare.
 
 ## Why it happens
 
 ```raamcode
-aroon = Aroon(14, on=self.trade)
-if aroon.crossed_above(50):       # ❌ — aroon has multiple outputs
+dmi = DMI(14, on=self.trade)
+if dmi.crossed_above(25):         # ❌ — dmi has multiple outputs
     ...
 ```
 
@@ -4406,11 +4301,11 @@ Compare specific fields explicitly. Field-level `.crossed_above` is on the roadm
 
 ```raamcode
 def execute(self):
-    aroon = Aroon(14, on=self.trade)
+    dmi = DMI(14, on=self.trade)
 
     # Compare fields directly
-    if aroon.up > 70 and aroon.down < 30 and self.trade.is_flat:
-        self.buy(self.trade, reason=f"Aroon up={aroon.up:.0f}")
+    if dmi.plus_di > dmi.minus_di and dmi.adx > 25 and self.trade.is_flat:
+        self.buy(self.trade, reason=f"+DI={dmi.plus_di:.0f}")
 ```
 
 For a true crossing detection on a multi-value field, track the previous bar's value in persistent state:
@@ -4430,7 +4325,6 @@ def execute(self):
 
 ## Related
 
-- [`Aroon`](../indicators/aroon)
 - [`DMI`](../indicators/dmi)
 - [Indicators](../language/indicators)
 
@@ -4490,7 +4384,6 @@ class MyStrategy(Strategy):
 | [`RSI`](../indicators/rsi) | Relative strength index |
 | [`Momentum`](../indicators/momentum) | Price momentum |
 | [`StdDev`](../indicators/stddev) | Standard deviation |
-| [`Aroon`](../indicators/aroon) | Aroon oscillator |
 | [`DMI`](../indicators/dmi) | Directional movement index |
 
 ## Related

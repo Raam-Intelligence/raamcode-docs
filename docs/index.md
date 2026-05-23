@@ -39,7 +39,7 @@ That is a complete, deployable strategy. Twelve lines.
 | **`Param()`** | Class body | A tunable value that participates in optimization. |
 | **`Symbol()`** | Class body | A market instrument slot. Subscribers bind tickers at deploy time. |
 | **Sizing** | Class body | How entry verbs size each trade — `FixedQuantity`, `FixedCapital`, or `Compounding`. |
-| **Indicators** | Top of `execute()` | `SMA`, `EMA`, `RSI`, `Aroon`, `DMI`, and custom indicators. |
+| **Indicators** | Top of `execute()` | `SMA`, `EMA`, `RSI`, `DMI`, and custom indicators. |
 | **Order verbs** | Anywhere in `execute()` | `buy`, `sell_short`, `sell`, `buy_to_cover`, `order`. |
 
 ## What RaamCode is not

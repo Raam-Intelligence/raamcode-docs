@@ -49,7 +49,6 @@ class MyStrategy(Strategy):
 | [`RSI`](../indicators/rsi) | Relative strength index |
 | [`Momentum`](../indicators/momentum) | Price momentum |
 | [`StdDev`](../indicators/stddev) | Standard deviation |
-| [`Aroon`](../indicators/aroon) | Aroon oscillator |
 | [`DMI`](../indicators/dmi) | Directional movement index |
 
 ## Related

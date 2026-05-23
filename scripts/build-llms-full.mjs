@@ -38,7 +38,6 @@ const ORDER = [
   'indicators/rsi.md',
   'indicators/momentum.md',
   'indicators/stddev.md',
-  'indicators/aroon.md',
   'indicators/dmi.md',
   'examples/index.md',
   'examples/buy-and-hold.md',

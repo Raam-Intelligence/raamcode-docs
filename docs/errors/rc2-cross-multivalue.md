@@ -4,13 +4,13 @@
 
 ## What it means
 
-Crossover helpers work between two single-value indicators (or between a single-value indicator and a number). Multi-value indicators like `Aroon` and `DMI` expose multiple fields (`.up`, `.down`, `.plus_di`, etc.) and don't have a single "the value" to compare.
+Crossover helpers work between two single-value indicators (or between a single-value indicator and a number). The multi-value `DMI` indicator exposes multiple fields (`.plus_di`, `.minus_di`, `.adx`, `.adxr`) and doesn't have a single "the value" to compare.
 
 ## Why it happens
 
 ```raamcode
-aroon = Aroon(14, on=self.trade)
-if aroon.crossed_above(50):       # ❌ — aroon has multiple outputs
+dmi = DMI(14, on=self.trade)
+if dmi.crossed_above(25):         # ❌ — dmi has multiple outputs
     ...
 ```
 
@@ -20,11 +20,11 @@ Compare specific fields explicitly. Field-level `.crossed_above` is on the roadm
 
 ```raamcode
 def execute(self):
-    aroon = Aroon(14, on=self.trade)
+    dmi = DMI(14, on=self.trade)
 
     # Compare fields directly
-    if aroon.up > 70 and aroon.down < 30 and self.trade.is_flat:
-        self.buy(self.trade, reason=f"Aroon up={aroon.up:.0f}")
+    if dmi.plus_di > dmi.minus_di and dmi.adx > 25 and self.trade.is_flat:
+        self.buy(self.trade, reason=f"+DI={dmi.plus_di:.0f}")
 ```
 
 For a true crossing detection on a multi-value field, track the previous bar's value in persistent state:
@@ -44,6 +44,5 @@ def execute(self):
 
 ## Related
 
-- [`Aroon`](../indicators/aroon)
 - [`DMI`](../indicators/dmi)
 - [Indicators](../language/indicators)

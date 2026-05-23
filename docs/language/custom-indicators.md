@@ -83,7 +83,7 @@ Return a number to make the indicator single-valued (`SMA`, `RSI`, etc.) — usa
 return sum(self.buffer) / len(self.buffer)
 ```
 
-Return a dict to make it multi-valued (`Aroon`-style). Field names become attributes you access from a strategy:
+Return a dict to make it multi-valued (like the built-in `DMI`). Field names become attributes you access from a strategy:
 
 ```raamcode
 return {"up": up_value, "down": down_value, "oscillator": up_value - down_value}

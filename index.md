@@ -87,7 +87,7 @@ class RSIMeanReversion(Strategy):
   :links="[
     { href: '/docs/getting-started', title: 'Quickstart', sub: 'Your first strategy in five minutes.' },
     { href: '/docs/language/overview', title: 'Language reference', sub: 'Every primitive, verb, and rule.' },
-    { href: '/docs/indicators/', title: 'Indicator catalog', sub: 'SMA, EMA, RSI, Aroon, DMI, and more.' },
+    { href: '/docs/indicators/', title: 'Indicator catalog', sub: 'SMA, EMA, RSI, DMI, and more.' },
     { href: '/docs/examples/', title: 'Examples', sub: 'Real strategies you can copy and run.' },
     { href: '/docs/concepts/execution-model', title: 'Execution model', sub: 'How bars flow through your strategy.' },
     { href: '/docs/errors/', title: 'Error reference', sub: 'Every error code, explained.' }

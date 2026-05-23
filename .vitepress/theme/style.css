@@ -55,7 +55,9 @@
 
 /* ── Layout polish ────────────────────────────────────────── */
 
-.VPNav,
+/* Blur only the bar itself — NOT .VPNav. A backdrop-filter on .VPNav
+   creates a containing block for fixed descendants, which traps the
+   mobile .VPNavScreen and collapses it to height:0 (menu won't open). */
 .VPNavBar {
   backdrop-filter: saturate(180%) blur(12px);
   -webkit-backdrop-filter: saturate(180%) blur(12px);
