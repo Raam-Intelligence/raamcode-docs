@@ -1,0 +1,79 @@
+# RaamCode
+
+> RaamCode is the Python-syntax DSL that powers Raamtrade strategies. It runs in a fully sandboxed, deterministic environment — no imports, no I/O, no network, no threading. RaamCode covers strategy authoring (entry verbs, exit rules, sizing, position helpers), built-in indicators, custom indicators, multi-symbol data feeds, sessions, and persistent state.
+
+The full canonical content is at [llms-full.txt](/llms-full.txt). The links below point to focused pages — use them when you need a specific primitive rather than the whole reference.
+
+## Getting started
+
+- [Why RaamCode](/docs/): five-paragraph overview of the language shape and the five core concepts.
+- [Quickstart](/docs/getting-started): build, backtest, and read results for a complete MA-cross strategy in five minutes.
+
+## Language reference
+
+- [Overview](/docs/language/overview): orientation, the ten Python instincts that break in RaamCode, where the truth lives.
+- [Strategy anatomy](/docs/language/anatomy): the exact shape every Strategy class must follow — required pieces, class-body rules, multi-symbol layout.
+- [Param()](/docs/language/params): tunable strategy inputs — signature, hard bounds, optimizer-grid hints, supported types (int/float/bool only).
+- [Symbol()](/docs/language/symbols): instrument slots — single-symbol implicit trade flag, multi-symbol data feeds, constructor arguments.
+- [Sizing](/docs/language/sizing): the required `sizing = ...` declaration. FixedQuantity, FixedCapital, Compounding — their compute rules, WFA behaviour, override kwargs.
+- [Indicators](/docs/language/indicators): declaration rules, `on=` source kinds, reading values, crossover detection, chaining, multi-value access.
+- [Order verbs](/docs/language/order-verbs): buy / sell_short / sell / buy_to_cover / order — when each fits, kwarg matrix per sizing model, fill timing (T+1 markets, trigger price for stops/limits).
+- [Position helpers](/docs/language/position-helpers): `self.trade.is_flat` / `.is_long` / `.position` etc. — why they live on the symbol slot, not on self.
+- [OHLCV access](/docs/language/ohlcv): per-bar price data from any symbol; why historical access uses indicators rather than arrays.
+- [Exit rules](/docs/language/exit-rules): stop_loss / take_profit / trailing_stop as function calls, tick-by-tick checks, dynamic re-registration, manual vs rule exits.
+- [Strategy properties](/docs/language/strategy-properties): read-only properties on self — capital, bar_count, entry_bar, run_mode, is_in_strategy_warmup.
+- [Persistent state](/docs/language/persistent-state): `self.x = ...` rules — first-assignment type fixing, allowed types, no collections, why.
+- [Helper methods](/docs/language/helper-methods): user methods on the strategy class — signature rules, what they can access, the indicator-locals restriction.
+- [Custom indicators](/docs/language/custom-indicators): Indicator subclasses, compute() signature, Series buffers, single-value vs multi-value returns, TR example.
+- [Sessions](/docs/language/sessions): the universal bar-timing contract — timezone, days, bars list, every() helper, broker pass-through.
+- [Python subset](/docs/language/python-subset): what works (control flow, arithmetic, f-strings, ternaries, allowed builtins), what's blocked (imports, try/except, async, lambda, print, eval, open, mutable collections).
+
+## Indicator catalog
+
+- [Catalog overview](/docs/indicators/): index of built-in indicators with output shape and common use.
+- [SMA](/docs/indicators/sma): simple moving average — signature, formula, warmup, variants (high/volume/chained).
+- [EMA](/docs/indicators/ema): exponentially-weighted moving average — formula with smoothing constant α, Wilder seeding, pullback example.
+- [RSI](/docs/indicators/rsi): Wilder-smoothed RSI bounded 0..100 — formula, warmup, classic 30/70 mean-reversion example.
+- [Momentum](/docs/indicators/momentum): raw rate of change (close − close N bars ago) — unbounded; normalization advice.
+- [StdDev](/docs/indicators/stddev): sample standard deviation — formula and Bollinger Bands construction example.
+- [Aroon](/docs/indicators/aroon): multi-value (.up/.down/.oscillator) — formula, threshold interpretation, why crossed_above doesn't apply.
+- [DMI](/docs/indicators/dmi): multi-value (.plus_di/.minus_di/.adx/.adxr) — Wilder formulas, ADX > 25 trend threshold, ranging-market filter usage.
+
+## Examples
+
+- [Examples gallery](/docs/examples/): five complete annotated strategies, each with a copy-paste source and a walkthrough.
+- [Buy and Hold](/docs/examples/buy-and-hold): minimal valid strategy — explains the floor (Strategy subclass, Symbol, sizing, execute).
+- [MA Cross](/docs/examples/ma-cross): two SMAs, crossover entry/exit, stop_loss + take_profit, optimizer tuning notes.
+- [RSI Mean Reversion](/docs/examples/rsi-mean-reversion): single RSI, threshold crossings, f-string reasons, regime-filter variant.
+- [Bollinger Bounce](/docs/examples/bollinger-bounce): composed indicator (SMA + StdDev), persistent state counter, scale-in/scale-out variant.
+- [SPY-Filtered Entries](/docs/examples/multi-symbol-spy-filter): multi-symbol with data feed, regime gating, Compounding sizing, VIX-extended variant.
+
+## Concepts
+
+- [Execution model](/docs/concepts/execution-model): the per-bar lifecycle (update OHLCV → feed indicators → check exit rules → run execute → fill queued orders), T+1 fill rationale, multi-signal rules.
+- [Warmup](/docs/concepts/warmup): indicator vs strategy warmup, three-phase model, walk-forward state-reset table.
+- [Sandbox](/docs/concepts/sandbox): why imports/IO/network/threading aren't part of the language; substitution table for common needs.
+
+## Error reference
+
+- [Error reference overview](/docs/errors/): error code prefixes (RC2_*, SDK*, CS*), most-common errors leaderboard, full index.
+- [RC2_CLASS_BODY](/docs/errors/rc2-class-body): class body contains a disallowed construct (only Param/Symbol/sizing/literals allowed).
+- [RC2_NO_SYMBOL](/docs/errors/rc2-no-symbol): strategy needs at least one Symbol() declaration.
+- [RC2_NO_TRADE](/docs/errors/rc2-no-trade): multi-symbol strategy needs exactly one Symbol(trade=True).
+- [RC2_NO_SIZING](/docs/errors/rc2-no-sizing): sizing = ... declaration is required.
+- [RC2_NO_EXECUTE](/docs/errors/rc2-no-execute): strategy must define def execute(self).
+- [RC2_IND_IN_BODY](/docs/errors/rc2-ind-in-body): indicator declared inside a conditional or loop — must be at top of execute().
+- [RC2_EXIT_NO_QTY](/docs/errors/rc2-exit-no-qty): sell / buy_to_cover require an explicit positional quantity.
+- [RC2_ENTRY_EXTRA_ARG](/docs/errors/rc2-entry-extra-arg): buy / sell_short take exactly one positional arg (the symbol).
+- [RC2_OVERRIDE_INVALID](/docs/errors/rc2-override-invalid): qty= or percent= kwarg mismatched to the sizing model.
+- [RC2_IMPORT_BLOCKED](/docs/errors/rc2-import-blocked): import statements are not allowed — substitution table provided.
+- [RC2_CROSS_MULTIVALUE](/docs/errors/rc2-cross-multivalue): crossed_above / crossed_below need single-value indicators on both sides.
+- [RC2_UNKNOWN_INDICATOR](/docs/errors/rc2-unknown-indicator): unknown indicator name (typo or out-of-scope custom indicator).
+- [RC2_STATE_SYMBOL_CLASH](/docs/errors/rc2-state-symbol-clash): persistent state variable shadows a Symbol slot.
+- [SDK010](/docs/errors/sdk010): rejected a reference to a restricted platform type.
+- [SDK011](/docs/errors/sdk011): rejected a reference to a restricted platform namespace.
+- [SDK012](/docs/errors/sdk012): blocked Python builtin (print, open, eval, etc.) — allowed-builtins list and replacements.
+
+## Optional
+
+- [Full content (single file)](/llms-full.txt): every page concatenated for LLM context windows that can fit it.
