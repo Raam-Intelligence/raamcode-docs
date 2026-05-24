@@ -90,6 +90,7 @@ class RSIMeanReversion(Strategy):
     { href: '/docs/indicators/', title: 'Indicator catalog', sub: 'SMA, EMA, RSI, DMI, and more.' },
     { href: '/docs/examples/', title: 'Examples', sub: 'Real strategies you can copy and run.' },
     { href: '/docs/concepts/execution-model', title: 'Execution model', sub: 'How bars flow through your strategy.' },
-    { href: '/docs/errors/', title: 'Error reference', sub: 'Every error code, explained.' }
+    { href: '/docs/errors/', title: 'Error reference', sub: 'Every error code, explained.' },
+    { href: '/llms-full', title: 'Full text', sub: 'Every page in one file — for LLMs & search.' }
   ]"
 />
