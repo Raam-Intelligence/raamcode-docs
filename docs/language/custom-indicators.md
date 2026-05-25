@@ -43,13 +43,33 @@ Any other parameter name → `RC2_IND_COMPUTE_SIG`.
 
 ## `Series(capacity)` — rolling buffers
 
-A `Series` is a fixed-size, FIFO buffer. Sized by a `Param` (so the capacity is optimizable).
+A `Series` is a fixed-size, FIFO buffer. Sized by a `Param` (so the capacity is optimizable), optionally offset by an integer literal:
 
 ```raamcode
 buffer = Series(period)         # capacity = self.period
+window = Series(period + 1)     # capacity = self.period + 1
 ```
 
-The buffer is bounded by the param's `max`, not its `default` — the platform pre-allocates worst-case to avoid resizing.
+The buffer is bounded by the param's `max` (plus any offset), not its `default` — the platform pre-allocates worst-case to avoid resizing.
+
+### Sizing for aggregates vs. differences
+
+Match the capacity to what you actually measure — this is the most common subtle bug in a custom indicator:
+
+- **Aggregate over N values** — an average, sum, min/max, or standard deviation of the last N closes — uses `Series(period)`. You want exactly N values.
+- **Change across N periods** — `close - buffer[0]` (momentum, rate-of-change, an N-period return) — uses `Series(period + 1)`. A change over N periods is the gap between two prices N bars apart, so the buffer must hold **N + 1** values: today's close *and* the one N bars back. With `Series(period)`, the oldest value (`buffer[0]`) is only N − 1 bars old, so the result spans one period too few.
+
+```raamcode
+class Momentum(Indicator):
+    period = Param(14, min=1, max=200)
+    buffer = Series(period + 1)        # +1 so buffer[0] is exactly N bars back
+
+    def compute(self, close):
+        self.buffer.add(close)
+        if not self.is_ready:
+            return 0
+        return close - self.buffer[0]  # change over the full N periods
+```
 
 ### Series API
 
@@ -128,7 +148,7 @@ def execute(self):
 | `RC2_IND_COMPUTE` | `compute()` body contains a disallowed construct. |
 | `RC2_IND_BODY` | Class body contains something other than `Param`, `Series`, or allowed declarations. |
 | `RC2_IND_PARAM` | Param used incorrectly inside an indicator. |
-| `RC2_IND_SERIES` | `Series()` declared incorrectly. |
+| `RC2_IND_SERIES` | `Series()` capacity must be a `Param`, optionally offset by an integer literal (e.g. `Series(period + 1)`). |
 | `RC2_IND_SERIES_CAPACITY` | `Series` capacity isn't a `Param`. |
 | `RC2_IND_MIXED_RETURN` | `compute()` returns both scalar and dict in different paths. |
 | `RC2_IND_INCONSISTENT_OUTPUTS` | Dict returns have inconsistent key sets across paths. |
