@@ -53,7 +53,7 @@ That is a complete, deployable strategy. Twelve lines.
 It is not full Python. RaamCode refuses:
 
 - `import` anything
-- Network or file I/O, `print()`, `eval()`, `exec()`, `open()`
+- Network or file I/O, `eval()`, `exec()`, `open()` (`print()` is allowed)
 - `try`/`except`, `async`/`await`, `yield`, `with`, `raise`, `lambda`
 - Mutable persistent state beyond `int`, `float`, `bool`, `str`
 
@@ -238,7 +238,7 @@ Every row below has been a real bug. Skim this once before you write your first 
 | 3 | `self.sell(self.trade, stop=p)` | `self.sell(self.trade, self.trade.position, stop=p)` | Exit verbs require an explicit quantity. |
 | 4 | `self.stop_loss = 2.0` | `self.stop_loss(2.0)` | Exit rules are function calls, not assignments. |
 | 5 | `import pandas` | blocked | No imports. No external code. Ever. |
-| 6 | `print(x)` | blocked | No stdout. Use `reason="..."` on signals for logging. |
+| 6 | `print(x)` | `print(x)` | Allowed. Each call emits one row to the Console / Log tab on your board. |
 | 7 | `try: ... except:` | blocked | Error handling is the platform's job. |
 | 8 | `my_list = [1,2,3]` as state | blocked | Persistent state is `int`, `float`, `bool`, `str` only. |
 | 9 | Indicator anywhere | Indicators at top of `execute()` only | They need every bar's data to compute correctly. |
@@ -867,7 +867,7 @@ self.sell_short(self.trade, reason="Short signal")
 | Kwarg | Effect |
 |---|---|
 | `stop=price` | Make it a stop order instead of market. Fills at `price`. |
-| `reason="..."` | Free-text annotation stored with the fill. Use this instead of `print()`. |
+| `reason="..."` | Free-text annotation stored with the fill (separate from `print()`, which goes to the Console tab). |
 | `qty=N` | Override sizing (only on `FixedQuantity`). |
 | `percent=N` | Override sizing (only on `FixedCapital` / `Compounding`). |
 
@@ -2083,7 +2083,7 @@ size = 100 if self.trade.close > 50 else 50
 | `with` (context managers) | All resources are platform-managed. There's nothing user-level to enter / exit. |
 | `lambda` | Eliminates entire classes of escape mechanism (callable values capturing scope). |
 | `global`, `nonlocal`, `del` | State management is bounded. These three break that bound. |
-| `print()`, `eval()`, `exec()`, `open()` | I/O and dynamic-code execution are out of scope. Use `reason="..."` for logging. |
+| `eval()`, `exec()`, `open()` | Dynamic-code execution and file I/O are out of scope. (`print()` is allowed — see the Console tab.) |
 | Mutable collections as state | Lists, dicts, tuples can't be persisted across bars. Use a `Series` in a custom indicator. |
 
 Each blocked construct produces a specific error. See the [Error Reference](../errors/).
@@ -2876,7 +2876,7 @@ Both 30 and 70 are `Param()` — let the optimizer find the best pair. Defaults 
 
 ### F-string reasons
 
-`reason=f"RSI oversold ({rsi.value:.1f})"` captures the RSI value at signal time. Reasons are saved with every fill and show up in the trade log — they make debugging and review much easier than `print()` would (which is blocked anyway).
+`reason=f"RSI oversold ({rsi.value:.1f})"` captures the RSI value at signal time. Reasons are saved with every fill and show up in the trade log — distinct from `print(...)` output, which appears on the Console tab.
 
 ### No stop loss
 
@@ -3626,7 +3626,7 @@ A typical sandbox restricts what code can do while it runs — file access block
 | Category | Examples |
 |---|---|
 | **External code** | `import` anything (stdlib or third-party). |
-| **I/O** | `print()`, `open()`, file reads, file writes. |
+| **I/O** | `open()`, file reads, file writes. (`print()` is allowed — its output goes to the Console / Log tab on your board.) |
 | **Network** | No HTTP, no sockets, no DNS. |
 | **Dynamic code** | `eval()`, `exec()`, `compile()`. |
 | **Error handling** | `try`, `except`, `finally`, `raise`. |
@@ -3691,7 +3691,7 @@ If a blocked construct seems necessary, there's almost always a platform primiti
 | You want | RaamCode answer |
 |---|---|
 | `import numpy` for math | Built-in `min`, `max`, `abs`, `sum`, and indicators cover the cases that matter. |
-| `print()` for debugging | `reason="..."` on every order — saved to the trade log. |
+| `print()` for debugging | Allowed — output appears in the Console / Log tab on your board. |
 | Read a file | Sessions and Symbols handle data delivery. Files are not a thing here. |
 | Persistent list of recent values | `Series` inside a custom indicator. |
 | Long-lived storage | Persistent state — within a run. For cross-run memory, use the optimizer (parameters are the persistent thing). |
@@ -3774,7 +3774,7 @@ Start here. These five account for the majority of authoring errors.
 - [`RC2_IMPORT_BLOCKED`](./rc2-import-blocked) — `import` statement.
 - [`SDK010`](./sdk010) — reference to a restricted platform type.
 - [`SDK011`](./sdk011) — reference to a restricted platform namespace.
-- [`SDK012`](./sdk012) — blocked builtin (`print`, `open`, `eval`, etc.).
+- [`SDK012`](./sdk012) — blocked builtin (`open`, `eval`, etc.).
 
 ## What if my error code isn't here?
 
@@ -5021,7 +5021,6 @@ Everything else is blocked.
 
 | Function | Replacement |
 |---|---|
-| `print(x)` | Use `reason="..."` on `self.buy` / `self.sell`. Reasons land in the trade log. |
 | `open(path)` | No file I/O. Data comes from `Symbol()`. |
 | `eval(s)`, `exec(s)` | No dynamic-code execution by design. |
 | `input()` | No I/O. Params take user input declaratively. |

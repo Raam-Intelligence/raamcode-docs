@@ -15,7 +15,7 @@ Every row below has been a real bug. Skim this once before you write your first 
 | 3 | `self.sell(self.trade, stop=p)` | `self.sell(self.trade, self.trade.position, stop=p)` | Exit verbs require an explicit quantity. |
 | 4 | `self.stop_loss = 2.0` | `self.stop_loss(2.0)` | Exit rules are function calls, not assignments. |
 | 5 | `import pandas` | blocked | No imports. No external code. Ever. |
-| 6 | `print(x)` | blocked | No stdout. Use `reason="..."` on signals for logging. |
+| 6 | `print(x)` | `print(x)` | Allowed. Each call emits one row to the Console / Log tab on your board. |
 | 7 | `try: ... except:` | blocked | Error handling is the platform's job. |
 | 8 | `my_list = [1,2,3]` as state | blocked | Persistent state is `int`, `float`, `bool`, `str` only. |
 | 9 | Indicator anywhere | Indicators at top of `execute()` only | They need every bar's data to compute correctly. |

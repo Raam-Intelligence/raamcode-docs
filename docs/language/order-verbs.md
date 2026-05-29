@@ -28,7 +28,7 @@ self.sell_short(self.trade, reason="Short signal")
 | Kwarg | Effect |
 |---|---|
 | `stop=price` | Make it a stop order instead of market. Fills at `price`. |
-| `reason="..."` | Free-text annotation stored with the fill. Use this instead of `print()`. |
+| `reason="..."` | Free-text annotation stored with the fill (separate from `print()`, which goes to the Console tab). |
 | `qty=N` | Override sizing (only on `FixedQuantity`). |
 | `percent=N` | Override sizing (only on `FixedCapital` / `Compounding`). |
 

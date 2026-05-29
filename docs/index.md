@@ -47,7 +47,7 @@ That is a complete, deployable strategy. Twelve lines.
 It is not full Python. RaamCode refuses:
 
 - `import` anything
-- Network or file I/O, `print()`, `eval()`, `exec()`, `open()`
+- Network or file I/O, `eval()`, `exec()`, `open()` (`print()` is allowed)
 - `try`/`except`, `async`/`await`, `yield`, `with`, `raise`, `lambda`
 - Mutable persistent state beyond `int`, `float`, `bool`, `str`
 

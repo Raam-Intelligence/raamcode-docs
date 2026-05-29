@@ -35,7 +35,7 @@ Both 30 and 70 are `Param()` — let the optimizer find the best pair. Defaults 
 
 ### F-string reasons
 
-`reason=f"RSI oversold ({rsi.value:.1f})"` captures the RSI value at signal time. Reasons are saved with every fill and show up in the trade log — they make debugging and review much easier than `print()` would (which is blocked anyway).
+`reason=f"RSI oversold ({rsi.value:.1f})"` captures the RSI value at signal time. Reasons are saved with every fill and show up in the trade log — distinct from `print(...)` output, which appears on the Console tab.
 
 ### No stop loss
 

@@ -79,10 +79,23 @@ size = 100 if self.trade.close > 50 else 50
 | `with` (context managers) | All resources are platform-managed. There's nothing user-level to enter / exit. |
 | `lambda` | Eliminates entire classes of escape mechanism (callable values capturing scope). |
 | `global`, `nonlocal`, `del` | State management is bounded. These three break that bound. |
-| `print()`, `eval()`, `exec()`, `open()` | I/O and dynamic-code execution are out of scope. Use `reason="..."` for logging. |
+| `eval()`, `exec()`, `open()` | Dynamic-code execution and file I/O are out of scope. |
 | Mutable collections as state | Lists, dicts, tuples can't be persisted across bars. Use a `Series` in a custom indicator. |
 
 Each blocked construct produces a specific error. See the [Error Reference](../errors/).
+
+### `print(...)` is allowed
+
+Use `print(...)` in your strategy code exactly like in plain Python — `print(*objects, sep=' ', end='\n')` (the `file=` and `flush=` kwargs are accepted for paste compatibility and ignored). Captured output appears in the **Console** tab on your board (during a backtest) or the **Log** tab (on a live runner). One `print(...)` call = one row.
+
+```python
+def execute(self):
+    if self.rsi.crossed_above(70):
+        print("RSI overbought at", self.trade.close)
+        self.sell()
+```
+
+`print(...)` works in `execute()` and `on_update_indicators()`. Inside a custom indicator's `compute()` method it is suppressed (that body is cached, so the call would not re-fire). Each captured row carries the bar timestamp it fired on.
 
 ## Why a subset?
 
@@ -99,7 +112,7 @@ The subset is large enough that almost any trading idea fits. If yours doesn't, 
 | Code | What it means |
 |---|---|
 | [`RC2_IMPORT_BLOCKED`](../errors/rc2-import-blocked) | `import` statement found. |
-| [`SDK012`](../errors/sdk012) | Blocked built-in called (`print`, `eval`, `open`, etc.). |
+| [`SDK012`](../errors/sdk012) | Blocked built-in called (`eval`, `open`, etc.). |
 | [`SDK010`](../errors/sdk010) | Reference to a restricted platform type. |
 | [`SDK011`](../errors/sdk011) | Reference to a restricted platform namespace. |
 | `RC2_EXEC_STMT` | Disallowed statement type in `execute()` (e.g. `try`, `with`, `raise`). |
