@@ -11,7 +11,7 @@ A typical sandbox restricts what code can do while it runs — file access block
 | Category | Examples |
 |---|---|
 | **External code** | `import` anything (stdlib or third-party). |
-| **I/O** | `print()`, `open()`, file reads, file writes. |
+| **I/O** | `open()`, file reads, file writes. (`print()` is allowed — see below.) |
 | **Network** | No HTTP, no sockets, no DNS. |
 | **Dynamic code** | `eval()`, `exec()`, `compile()`. |
 | **Error handling** | `try`, `except`, `finally`, `raise`. |
@@ -76,7 +76,7 @@ If a blocked construct seems necessary, there's almost always a platform primiti
 | You want | RaamCode answer |
 |---|---|
 | `import numpy` for math | Built-in `min`, `max`, `abs`, `sum`, and indicators cover the cases that matter. |
-| `print()` for debugging | `reason="..."` on every order — saved to the trade log. |
+| `print()` for debugging | Allowed — output appears in the Console / Log tab on your board. |
 | Read a file | Sessions and Symbols handle data delivery. Files are not a thing here. |
 | Persistent list of recent values | `Series` inside a custom indicator. |
 | Long-lived storage | Persistent state — within a run. For cross-run memory, use the optimizer (parameters are the persistent thing). |
@@ -90,5 +90,5 @@ If you find a case that genuinely doesn't fit, [open an issue](https://github.co
 | [`RC2_IMPORT_BLOCKED`](../errors/rc2-import-blocked) | `import` statement. |
 | [`SDK010`](../errors/sdk010) | Reference to a restricted platform type. |
 | [`SDK011`](../errors/sdk011) | Reference to a restricted platform namespace. |
-| [`SDK012`](../errors/sdk012) | Blocked builtin (e.g. `print`, `open`, `eval`). |
+| [`SDK012`](../errors/sdk012) | Blocked builtin (e.g. `open`, `eval`). |
 | `RC2_EXEC_STMT` | Disallowed statement type (`try`, `with`, `raise`, etc.). |

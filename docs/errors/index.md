@@ -59,7 +59,7 @@ Start here. These five account for the majority of authoring errors.
 - [`RC2_IMPORT_BLOCKED`](./rc2-import-blocked) — `import` statement.
 - [`SDK010`](./sdk010) — reference to a restricted platform type.
 - [`SDK011`](./sdk011) — reference to a restricted platform namespace.
-- [`SDK012`](./sdk012) — blocked builtin (`print`, `open`, `eval`, etc.).
+- [`SDK012`](./sdk012) — blocked builtin (`open`, `eval`, etc.).
 
 ## What if my error code isn't here?
 
